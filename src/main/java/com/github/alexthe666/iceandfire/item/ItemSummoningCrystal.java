@@ -92,7 +92,7 @@ public class ItemSummoningCrystal extends Item {
 
     public EnumActionResult onItemUse(EntityPlayer player, World worldIn, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
         ItemStack stack = player.getHeldItem(hand);
-        boolean flag = false;
+        boolean foundDragon = false;
         BlockPos offsetPos = pos.offset(facing);
         float yaw = player.rotationYaw;
         boolean displayError = false;
