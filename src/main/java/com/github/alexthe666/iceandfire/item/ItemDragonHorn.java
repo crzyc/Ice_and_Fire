@@ -69,14 +69,16 @@ public class ItemDragonHorn extends Item {
         NBTTagCompound nbtPrev = stack.getTagCompound() == null ? new NBTTagCompound() : stack.getTagCompound();
         NBTTagCompound nbt = nbtPrev.getCompoundTag("EntityTag");
         if(!nbt.isEmpty()){
-            Entity entity = EntityList.createEntityFromNBT(nbt, worldIn);
-            entity.setLocationAndAngles(pos.getX() + 0.5D, pos.getY() + 1.5D, pos.getZ() + 0.5D, player.getRotationYawHead(), 0);
-            stack.setTagCompound(new NBTTagCompound());
-            worldIn.playSound(player, pos, SoundEvents.ENTITY_ZOMBIE_VILLAGER_CONVERTED, SoundCategory.NEUTRAL, 3, 0.75F);
-            if(!worldIn.isRemote){
-                worldIn.spawnEntity(entity);
-            }
-            player.swingArm(hand);
+			if (!player.world.isRemote) {
+				Entity entity = EntityList.createEntityFromNBT(nbt, worldIn);
+				entity.setLocationAndAngles(pos.getX() + 0.5D, pos.getY() + 1.5D, pos.getZ() + 0.5D, player.getRotationYawHead(), 0);
+				stack.setTagCompound(new NBTTagCompound());
+				worldIn.playSound(player, pos, SoundEvents.ENTITY_ZOMBIE_VILLAGER_CONVERTED, SoundCategory.NEUTRAL, 3, 0.75F);
+				if(!worldIn.isRemote){
+					worldIn.spawnEntity(entity);
+				}
+				player.swingArm(hand);
+			}
         }
         return EnumActionResult.SUCCESS;
     }
@@ -84,19 +86,19 @@ public class ItemDragonHorn extends Item {
     @Override
     public boolean itemInteractionForEntity(ItemStack stack, EntityPlayer playerIn, EntityLivingBase target, EnumHand hand) {
         ItemStack trueStack = playerIn.getHeldItem(hand);
-        if (target instanceof EntityDragonBase && ((EntityDragonBase) target).isOwner(playerIn) && (trueStack.getTagCompound() == null || trueStack.getTagCompound() != null && trueStack.getTagCompound().getCompoundTag("EntityTag").isEmpty())) {
-            NBTTagCompound entityTag = new NBTTagCompound();
-            entityTag.setString("id", EntityList.getKey(target).toString());
-            target.writeEntityToNBT(entityTag);
-            NBTTagCompound newTag = new NBTTagCompound();
-            newTag.setTag("EntityTag", entityTag);
-            trueStack.setTagCompound(newTag);
-            playerIn.swingArm(hand);
-            playerIn.world.playSound(playerIn, playerIn.getPosition(), SoundEvents.ENTITY_ZOMBIE_VILLAGER_CONVERTED, SoundCategory.NEUTRAL, 3, 0.75F);
-            target.setDead();
-            playerIn.world.removeEntity(target);
-            return true;
-        }
+			if (target instanceof EntityDragonBase && ((EntityDragonBase) target).isOwner(playerIn) && (trueStack.getTagCompound() == null || trueStack.getTagCompound() != null && trueStack.getTagCompound().getCompoundTag("EntityTag").isEmpty())) {
+				NBTTagCompound entityTag = new NBTTagCompound();
+				entityTag.setString("id", EntityList.getKey(target).toString());
+				target.writeEntityToNBT(entityTag);
+				NBTTagCompound newTag = new NBTTagCompound();
+				newTag.setTag("EntityTag", entityTag);
+				trueStack.setTagCompound(newTag);
+				playerIn.swingArm(hand);
+				playerIn.world.playSound(playerIn, playerIn.getPosition(), SoundEvents.ENTITY_ZOMBIE_VILLAGER_CONVERTED, SoundCategory.NEUTRAL, 3, 0.75F);
+				target.setDead();
+				playerIn.world.removeEntity(target);
+				return true;
+			}
        return false;
     }
 
