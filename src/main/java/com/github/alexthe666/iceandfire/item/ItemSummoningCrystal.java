@@ -97,74 +97,27 @@ public class ItemSummoningCrystal extends Item {
         float yaw = player.rotationYaw;
         boolean displayError = false;
         if (stack.getItem() == this && hasDragon(stack)) {
-            int dragonCount = 0;
-            if (stack.getTagCompound() != null) {
-                for (String tagInfo : stack.getTagCompound().getKeySet()) {
-                    if (tagInfo.contains("Dragon")) {
-                        dragonCount++;
-                        NBTTagCompound dragonTag = stack.getTagCompound().getCompoundTag(tagInfo);
-                        UUID id = dragonTag.getUniqueId("DragonUUID");
-                        if(id != null){
-                            if(!worldIn.isRemote){
-                                try{
-                                    Entity entity = worldIn.getMinecraftServer().getEntityFromUuid(id);
-                                    if(entity != null){
-                                        flag = true;
-                                        summonEntity(entity, worldIn, offsetPos, yaw);
-                                    }
-                                }catch (Exception e) {
-                                    e.printStackTrace();
-                                    displayError = true;
-                                }
-                                ForgeChunkManager.Ticket ticket = null;
-                                DragonPosWorldData data = DragonPosWorldData.get(worldIn);
-                                BlockPos dragonChunkPos = null;
-                                if(data != null) {
-                                    dragonChunkPos = data.getDragonPos(id);
-                                }
-                                if(IceAndFire.CONFIG.chunkLoadSummonCrystal){
-                                    try {
-                                        boolean flag2 = false;
-                                        if (!flag) {//server side but couldn't find dragon
-                                            if (data != null) {
-                                                ticket = ForgeChunkManager.requestPlayerTicket(IceAndFire.INSTANCE, player.getName(), worldIn, ForgeChunkManager.Type.NORMAL);
-                                                if (ticket != null) {
-                                                    if (dragonChunkPos != null) {
-                                                        ForgeChunkManager.forceChunk(ticket, new ChunkPos(dragonChunkPos));
-                                                    } else {
-                                                        displayError = true;
-                                                    }
-                                                    lastChunkTicket = ticket;
-                                                    flag2 = true;
-                                                }
-                                            }
-                                        }
-                                        if (flag2) {
-                                            try {
-                                                Entity entity = worldIn.getMinecraftServer().getEntityFromUuid(id);
-                                                if (entity != null) {
-                                                    flag = true;
-                                                    summonEntity(entity, worldIn, offsetPos, yaw);
-                                                }
-                                            } catch (Exception e) {
-                                                e.printStackTrace();
-                                            }
-                                        }
-                                        if (flag && lastChunkTicket != null && dragonChunkPos != null) {
-                                            ForgeChunkManager.releaseTicket(lastChunkTicket);
-                                            lastChunkTicket = null;
-                                        }
-                                    } catch (Exception e){
-                                        IceAndFire.logger.warn("Could not load chunk when summoning dragon");
-                                        e.printStackTrace();
-                                    }
-                                }
-                            }
+            CompoundNBT tag = stack.getTag();
+            if (tag != null && tag.contains("Dragon")) {
+                CompoundNBT dragonTag = tag.getCompound("Dragon");
+                UUID dragonUUID = dragonTag.getUniqueId("DragonUUID");
+                if (dragonUUID != null) {
+					if (!context.getWorld().isRemote) {
+						try {
+                            Entity entity = context.getWorld().getServer().getWorld(context.getPlayer().world.func_234923_W_()).getEntityByUuid(dragonUUID);
+                            if (entity != null) {
+                                foundDragon = true;
+								summonEntity(entity, context.getWorld(), offsetPos, yaw);
+							}
+						}
+						catch (Exception e) {
+                            e.printStackTrace();
+                            displayError = true;
                         }
-                    }
-                }
-            }
-            if (flag) {
+					}
+				}
+			}
+            if (foundDragon){
                 player.playSound(SoundEvents.ENTITY_ENDERMEN_TELEPORT, 1, 1);
                 player.playSound(SoundEvents.BLOCK_GLASS_BREAK, 1, 1);
                 player.swingArm(hand);
@@ -174,6 +127,7 @@ public class ItemSummoningCrystal extends Item {
                 player.sendStatusMessage(new TextComponentTranslation("message.iceandfire.noDragonTeleport"), true);
 
             }
+						
         }
         return EnumActionResult.PASS;
     }

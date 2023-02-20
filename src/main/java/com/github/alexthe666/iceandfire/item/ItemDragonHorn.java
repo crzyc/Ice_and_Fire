@@ -1,5 +1,6 @@
 package com.github.alexthe666.iceandfire.item;
 
+import java.util.UUID;
 import com.github.alexthe666.iceandfire.IceAndFire;
 import com.github.alexthe666.iceandfire.client.StatCollector;
 import com.github.alexthe666.iceandfire.entity.EntityDragonBase;
@@ -87,10 +88,13 @@ public class ItemDragonHorn extends Item {
     public boolean itemInteractionForEntity(ItemStack stack, EntityPlayer playerIn, EntityLivingBase target, EnumHand hand) {
         ItemStack trueStack = playerIn.getHeldItem(hand);
 			if (target instanceof EntityDragonBase && ((EntityDragonBase) target).isOwner(playerIn) && (trueStack.getTagCompound() == null || trueStack.getTagCompound() != null && trueStack.getTagCompound().getCompoundTag("EntityTag").isEmpty())) {
+				EntityDragonBase entityDragon = (EntityDragonBase) target;
 				NBTTagCompound entityTag = new NBTTagCompound();
 				entityTag.setString("id", EntityList.getKey(target).toString());
 				target.writeEntityToNBT(entityTag);
 				NBTTagCompound newTag = new NBTTagCompound();
+				UUID dragonUuid = entityDragon.getUniqueID();
+				newTag.setTag("DragonUUID", dragonUuid);
 				newTag.setTag("EntityTag", entityTag);
 				trueStack.setTagCompound(newTag);
 				playerIn.swingArm(hand);
